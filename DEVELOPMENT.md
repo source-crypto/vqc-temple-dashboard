@@ -34,7 +34,32 @@ The backend will be available at the URL shown in your terminal (typically `http
 
 
 
+### Frontend Setup
 
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+
+2. Install the dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+   ```bash
+   npx vite dev
+   ```
+
+The frontend will be available at `http://localhost:5173` (or the next available port).
+
+
+### Generate Frontend Client
+To generate the frontend client, run the following command in the `backend` directory:
+
+```bash
+encore gen client --target leap
+```
 
 ## Deployment
 

@@ -1,0 +1,1 @@
+{"id": "vqc-temple-dashboard-9nh2", "lang": "typescript"}
