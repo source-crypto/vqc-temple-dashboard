@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS bridge_confirmations (
   confirmation_count INTEGER DEFAULT 0,
   required_confirmations INTEGER DEFAULT 12,
   block_number BIGINT,
-  is_finalized BOOLEAN DEFAULT false,
+  is_finalized BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
