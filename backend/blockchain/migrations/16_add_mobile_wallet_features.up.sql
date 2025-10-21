@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS mobile_qr_codes (
   qr_code_id TEXT UNIQUE NOT NULL,
   type TEXT NOT NULL,
   payload TEXT NOT NULL,
-  used BOOLEAN DEFAULT false,
+  used BOOLEAN DEFAULT true,
   expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS mobile_sessions (
   user_id TEXT NOT NULL,
   device_id TEXT NOT NULL,
   session_token TEXT UNIQUE NOT NULL,
-  biometric_enabled BOOLEAN DEFAULT false,
+  biometric_enabled BOOLEAN DEFAULT true,
   last_active TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
