@@ -26,7 +26,7 @@ CREATE TABLE system_alerts (
   severity TEXT NOT NULL, -- 'low', 'medium', 'high', 'critical'
   message TEXT NOT NULL,
   details JSONB,
-  is_resolved BOOLEAN DEFAULT FALSE,
+  is_resolved BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   resolved_at TIMESTAMP WITH TIME ZONE
 );
