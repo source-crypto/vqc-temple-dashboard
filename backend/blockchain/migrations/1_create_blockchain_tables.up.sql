@@ -48,7 +48,7 @@ CREATE TABLE contracts (
   abi JSONB NOT NULL,
   source_code TEXT,
   compiler_version TEXT,
-  optimization_enabled BOOLEAN DEFAULT false,
+  optimization_enabled BOOLEAN DEFAULT true,
   verification_status TEXT DEFAULT 'unverified',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   FOREIGN KEY (creation_block_number) REFERENCES blocks(block_number)
