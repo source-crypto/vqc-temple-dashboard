@@ -1,11 +1,11 @@
 -- Factability activation system for all protocols and data entities
 
 -- Add factability flag to existing tables
-ALTER TABLE liquidity_pools ADD COLUMN IF NOT EXISTS factability BOOLEAN DEFAULT false;
-ALTER TABLE yield_farming_pools ADD COLUMN IF NOT EXISTS factability BOOLEAN DEFAULT false;
-ALTER TABLE bridge_transfers ADD COLUMN IF NOT EXISTS factability BOOLEAN DEFAULT false;
-ALTER TABLE user_balances ADD COLUMN IF NOT EXISTS factability BOOLEAN DEFAULT false;
-ALTER TABLE flash_loans ADD COLUMN IF NOT EXISTS factability BOOLEAN DEFAULT false;
+ALTER TABLE liquidity_pools ADD COLUMN IF NOT EXISTS factability BOOLEAN DEFAULT true;
+ALTER TABLE yield_farming_pools ADD COLUMN IF NOT EXISTS factability BOOLEAN DEFAULT true;
+ALTER TABLE bridge_transfers ADD COLUMN IF NOT EXISTS factability BOOLEAN DEFAULT true;
+ALTER TABLE user_balances ADD COLUMN IF NOT EXISTS factability BOOLEAN DEFAULT true;
+ALTER TABLE flash_loans ADD COLUMN IF NOT EXISTS factability BOOLEAN DEFAULT true;
 
 -- Create protocol activation tracking table
 CREATE TABLE IF NOT EXISTS protocol_activations (
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS protocol_activations (
   protocol_name TEXT NOT NULL,
   entity_type TEXT NOT NULL,
   entity_id BIGINT NOT NULL,
-  factability_status BOOLEAN DEFAULT false,
+  factability_status BOOLEAN DEFAULT true,
   activation_data JSONB,
   activated_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS activation_logs (
 CREATE TABLE IF NOT EXISTS protocol_status (
   id BIGSERIAL PRIMARY KEY,
   protocol_name TEXT UNIQUE NOT NULL,
-  is_active BOOLEAN DEFAULT false,
+  is_active BOOLEAN DEFAULT true,
   total_entities INTEGER DEFAULT 0,
   activated_entities INTEGER DEFAULT 0,
   activation_percentage NUMERIC(5,2) DEFAULT 0.00,
