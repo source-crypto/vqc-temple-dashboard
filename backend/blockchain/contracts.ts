@@ -478,7 +478,7 @@ function generateContractAddress(): string {
 }
 
 function isValidAddress(address: string): boolean {
-  return /^0x[a-fA-F0-9]{40}$/.test(address);
+} return /^0x[a-fA-F0-9]{40}$/.test(address);
 // quantumTemporalContracts.ts
 import { api, APIError } from "encore.dev/api";
 import { monitoredBlockchainDB as blockchainDB } from "./db";
