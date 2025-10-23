@@ -981,3 +981,26 @@ function generateSeedPhrase(): string {
   
   return phrase.join(' ');
 }
+CREATE TABLE interstellar_flows (
+  id SERIAL PRIMARY KEY,
+  designation TEXT NOT NULL,
+  timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
+  chain_id INTEGER,
+  source_system TEXT,
+  composition_summary TEXT,
+  note TEXT
+);
+
+CREATE TABLE interstellar_transactions (
+  id SERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  transaction_type TEXT NOT NULL,
+  designation TEXT NOT NULL,
+  currency TEXT NOT NULL,
+  amount NUMERIC NOT NULL,
+  fee_amount NUMERIC NOT NULL,
+  status TEXT NOT NULL,
+  memo TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  completed_at TIMESTAMP WITH TIME ZONE
+);
