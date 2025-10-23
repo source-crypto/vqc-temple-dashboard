@@ -1,3 +1,25 @@
+import { v4 as uuidv4 } from "uuid";
+
+const TransactionRecord = {
+  id: uuidv4(),
+  userId: "USER_ID_HERE",         // reference to wallet or account
+  type: "transfer",               // could be: 'transfer', 'stake', 'mint', 'burn', etc.
+  amount: 1470000,                // numerical value of ASM transferred
+  currency: "ASM",                // symbolic token, e.g., 'ASM'
+  timestamp: Date.now(),          // milliseconds since epoch
+  status: "pending",              // 'pending' | 'confirmed' | 'failed'
+  metadata: {
+    eccentricity: 6.14,           // shape of orbital curve (hyperbolic trajectory)
+    perihelion: 1.38,             // closest approach value
+    trajectory: "hyperbolic",     // possible values: 'elliptic', 'parabolic', 'hyperbolic'
+    origin: "interstellar",       // symbolic source of transaction energy
+    signature: "Ξ≠̷͓̿̽X̸::҉̍",    // optional: symbolic or cryptographic mark
+    frequency: "147.000 MHz",     // optional: tone resonance for 'Audio-Consciousness Map'
+    intent: "flow to recipient in divine harmonic" // symbolic note or reason
+  }
+};
+
+console.log(TransactionRecord);
 type TransactionStatus = "pending" | "confirmed" | "failed";
 
 interface TransactionRecord {
