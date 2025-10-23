@@ -1,0 +1,72 @@
+type TransactionStatus = "pending" | "confirmed" | "failed";
+
+interface TransactionRecord {
+  id: string;
+  userId: string;
+  type: string;            // "transfer", "stake", "exchange", etc.
+  amount: number;
+  currency: string;
+  timestamp: number;
+  status: TransactionStatus;
+  metadata?: any;          // for orbital tags
+}
+const tx: TransactionRecord = {
+  id: uuidv4(),
+  userId,
+  type: "transfer",
+  amount,
+  currency: "ASM",
+  timestamp: Date.now(),
+  status: "pending",
+  metadata: {
+    eccentricity: 6.14,
+    perihelion: 1.38,
+    trajectory: "hyperbolic",
+    origin: "interstellar"
+  }
+};
+
+await db.transactions.insert(tx);
+async function reconcilePendingTransactions() {
+  const pending = await db.transactions.find({ status: "pending" });
+
+  for (const tx of pending) {
+    const success = Math.random() > 0.05; // simulate network confirmation probability
+
+    if (success) {
+      await db.transactions.update(tx.id, { status: "confirmed" });
+      await creditUserBalance(tx.userId, tx.currency, tx.amount);
+    } else {
+      await db.transactions.update(tx.id, { status: "failed" });
+    }
+  }
+}
+setInterval(reconcilePendingTransactions, 15_000);
+| Parameter      | Description                      | Symbolic Role                                                                           |
+| -------------- | -------------------------------- | --------------------------------------------------------------------------------------- |
+| `eccentricity` | 6.14 → hyperbolic (escape orbit) | “Outlier” transaction, unbound — symbolic of liberation or external influence           |
+| `perihelion`   | 1.38 AU                          | Closest point to source energy (Sun) — may correspond to transaction “heat” or priority |
+| `inclination`  | 38.2° (example)                  | Orbital tilt — can encode user identity, project, or balance type                       |
+| `epoch`        | Julian date of record            | Symbolic timestamp alignment for cosmic mapping                                         |
+if (tx.metadata.eccentricity > 1.0) {
+  tx.fee = tx.amount * 0.00614; // symbolic hyperbolic fee scaling
+}
+const feeRates = {
+  USD: 0.005,
+  ASM: 0.001,
+  ETH: 0.002,
+  BTC: 0.0025
+};
+
+function calculateFee(amount: number, currency: string) {
+  const base = feeRates[currency] || 0.001;
+  return amount * base;
+}
+tx.fee = (tx.metadata.eccentricity ** 2) * 0.0001;
+interface OrbitalLedger {
+  txId: string;
+  eccentricity: number;
+  perihelion: number;
+  timestamp: number;
+  cosmicSignature: string; // hash of orbital + transaction data
+}
