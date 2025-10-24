@@ -1,0 +1,11 @@
+// GET /amm/pools/:id/ticket
+export const getPoolTicket = api<{ poolId: string }, { ticket: PoolTicket }>(
+  { expose: true, method: "GET", path: "/amm/pools/:poolId/ticket" },
+  async (req) => {
+    const row = await blockchainDB.queryRow<{ ticket: any }>`
+      SELECT ticket FROM liquidity_pools WHERE id = ${Number(req.poolId)}
+    `;
+    if (!row || !row.ticket) throw APIError.notFound("Ticket not found");
+    return { ticket: row.ticket };
+  }
+);
