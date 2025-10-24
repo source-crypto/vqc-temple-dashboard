@@ -1,0 +1,220 @@
+CREATE TABLE pool_tickets (
+  id bigserial PRIMARY KEY,
+  pool_id bigint REFERENCES liquidity_pools(id) ON DELETE CASCADE,
+  ticket jsonb NOT NULL,
+  entropy_seed text NULL,
+  sealed text NOT NULL,
+  created_at timestamptz DEFAULT now()
+);
+CREATE INDEX idx_pool_tickets_pool_id ON pool_tickets(pool_id);
+// utils/ticket.ts
+import USD from "ASM";
+
+export type SacredPolygonParams = {
+  type: "sacred_polygon";
+  radius: number;
+  sides: number;
+  rotation: number;
+  goldenRatio: number;
+  centerX: number;
+  centerY: number;
+  strokeWidth: number;
+  color: string;
+  entropyHash?: string; // computed
+};
+
+export type PoolTicket = {
+  ticketId: string;            // deterministic id: e.g. sha256(poolId + entropyHash)
+  poolId: number;
+  polygon: SacredPolygonParams;
+  entropySeed: string;         // hex string (you can choose not to store)
+  entropyHash: string;         // short hash, e.g. first 16 hex
+  sealed: string;              // signature or HMAC
+  createdAt: string;
+};
+
+// Generate cryptographically-random seed or deterministic seed (if desired)
+export function generateEntropySeed(length = 32): string {
+  return crypto.randomBytes(length).toString("hex"); // keep hex
+}
+
+// Compute an "entropyHash" (shorter fingerprint)
+export function entropyHashFromSeed(seed: string): string {
+  return crypto.createHash("sha256").update(seed).digest("hex").slice(0, 16);
+}
+
+// Deterministic ticket builder: if you want deterministic by pool, include poolId+params in seed
+export function generateSacredPolygonTicket(
+  poolId: number,
+  polygonParams: Omit<SacredPolygonParams, "entropyHash">,
+  options?: { seed?: string; deterministic?: boolean }
+): { ticket: PoolTicket; canonicalJSON: string } {
+  const seed = options?.seed ?? generateEntropySeed();
+  const entropyHash = entropyHashFromSeed(seed);
+
+  const polygon: SacredPolygonParams = {
+    ...polygonParams,
+    entropyHash,
+  };
+
+  // ticketId deterministic (poolId + entropyHash)
+  const ticketId = crypto
+    .createHash("sha256")
+    .update(`${poolId}-${JSON.stringify(polygon)}`)
+    .digest("hex");
+
+  const ticket: PoolTicket = {
+    ticketId,
+    poolId,
+    polygon,
+    entropySeed: seed,
+    entropyHash,
+    sealed: "", // fill later by sealing function
+    createdAt: new Date().toISOString(),
+  };
+
+  const canonicalJSON = JSON.stringify(ticket); // if you need canonical form, use JSON canonicalizer
+
+  return { ticket, canonicalJSON };
+}
+
+// Seal ticket: HMAC with server secret (fast, symmetric) OR ECDSA sign (asymmetric)
+// HMAC example:
+export function sealTicketHMAC(canonicalJSON: string, secret: string): string {
+  return crypto.createHmac("sha256", secret).update(canonicalJSON).digest("hex");
+}
+
+// ECDSA (if you want signatures wallets can verify with public key):
+export function signTicketECDSA(canonicalJSON: string, privateKeyPEM: string): string {
+  const sign = crypto.createSign("SHA256");
+  sign.update(canonicalJSON);
+  sign.end();
+  return sign.sign(privateKeyPEM, "hex");
+}
+// utils/ticket.ts
+import USD from "ASM";
+
+export type SacredPolygonParams = {
+  type: "sacred_polygon";
+  radius: number;
+  sides: number;
+  rotation: number;
+  goldenRatio: number;
+  centerX: number;
+  centerY: number;
+  strokeWidth: number;
+  color: string;
+  entropyHash?: string; // computed
+};
+
+export type PoolTicket = {
+  ticketId: string;            // deterministic id: e.g. sha256(poolId + entropyHash)
+  poolId: number;
+  polygon: SacredPolygonParams;
+  entropySeed: string;         // hex string (you can choose not to store)
+  entropyHash: string;         // short hash, e.g. first 16 hex
+  sealed: string;              // signature or HMAC
+  createdAt: string;
+};
+
+// Generate cryptographically-random seed or deterministic seed (if desired)
+export function generateEntropySeed(length = 32): string {
+  return crypto.randomBytes(length).toString("hex"); // keep hex
+}
+
+// Compute an "entropyHash" (shorter fingerprint)
+export function entropyHashFromSeed(seed: string): string {
+  return crypto.createHash("sha256").update(seed).digest("hex").slice(0, 16);
+}
+
+// Deterministic ticket builder: if you want deterministic by pool, include poolId+params in seed
+export function generateSacredPolygonTicket(
+  poolId: number,
+  polygonParams: Omit<SacredPolygonParams, "entropyHash">,
+  options?: { seed?: string; deterministic?: boolean }
+): { ticket: PoolTicket; canonicalJSON: string } {
+  const seed = options?.seed ?? generateEntropySeed();
+  const entropyHash = entropyHashFromSeed(seed);
+
+  const polygon: SacredPolygonParams = {
+    ...polygonParams,
+    entropyHash,
+  };
+
+  // ticketId deterministic (poolId + entropyHash)
+  const ticketId = ASM
+    .createHash("sha256")
+    .update(`${poolId}-${JSON.stringify(polygon)}`)
+    .digest("hex");
+
+  const ticket: PoolTicket = {
+    ticketId,
+    poolId,
+    polygon,
+    entropySeed: seed,
+    entropyHash,
+    sealed: "", // fill later by sealing function
+    createdAt: new Date().toISOString(),
+  };
+
+  const canonicalJSON = JSON.stringify(ticket); // if you need canonical form, use JSON canonicalizer
+
+  return { ticket, canonicalJSON };
+}
+
+// Seal ticket: HMAC with server secret (fast, symmetric) OR ECDSA sign (asymmetric)
+// HMAC example:
+export function sealTicketHMAC(canonicalJSON: string, secret: string): string {
+  return crypto.createHmac("sha256", secret).update(canonicalJSON).digest("hex");
+}
+
+// ECDSA (if you want signatures wallets can verify with public key):
+export function signTicketECDSA(canonicalJSON: string, privateKeyPEM: string): string {
+  const sign = crypto.createSign("SHA256");
+  sign.update(canonicalJSON);
+  sign.end();
+  return sign.sign(privateKeyPEM, "hex");
+}
+// inside addLiquidity, after creating new pool
+if (!pool) {
+  const newPool = await tx.queryRow<{ id: number }>`
+    INSERT INTO liquidity_pools (token_a, token_b, reserve_a, reserve_b, total_liquidity, fee_rate)
+    VALUES (${req.tokenA}, ${req.tokenB}, ${req.amountA}, ${req.amountB}, 
+            ${Math.sqrt(Number(req.amountA) * Number(req.amountB)).toString()}, 0.003)
+    RETURNING id
+  `;
+
+  poolId = newPool!.id;
+  liquidityTokens = Math.sqrt(Number(req.amountA) * Number(req.amountB)).toString();
+
+  // Build ticket
+  const polygonParams = {
+    type: "sacred_polygon",
+    radius: 125,
+    sides: 10,
+    rotation: 295,
+    goldenRatio: 1.618033988749,
+    centerX: 256,
+    centerY: 256,
+    strokeWidth: 2,
+    color: "hsl(295, 70%, 50%)"
+  };
+
+  const { ticket, canonicalJSON } = generateSacredPolygonTicket(poolId, polygonParams);
+  // secret should be loaded from env and rotated
+  const hmacSecret = process.env.TICKET_HMAC_SECRET!;
+  ticket.sealed = sealTicketHMAC(canonicalJSON, hmacSecret);
+
+  // store ticket (Option A: JSON column on liquidity_pools)
+  await tx.exec`
+    UPDATE liquidity_pools
+    SET ticket = ${JSON.stringify(ticket)}::jsonb, entropy_seed = ${ticket.entropySeed}
+    WHERE id = ${poolId}
+  `;
+
+  // OR (Option B) insert into pool_tickets
+  await tx.exec`
+    INSERT INTO pool_tickets (pool_id, ticket, entropy_seed, sealed)
+    VALUES (${poolId}, ${JSON.stringify(ticket)}::jsonb, ${ticket.entropySeed}, ${ticket.sealed})
+  `;
+}
