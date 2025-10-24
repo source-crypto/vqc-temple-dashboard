@@ -1,0 +1,6 @@
+for transaction in blockchain.transactions:
+    fee = calculate_fee(transaction)
+    burn = fee * BURN_RATE
+    tokens -= burn  # destruction of supply
+    tokensNot += burn  # ledger of absence (entropy record)
+    Blockchain.Pace.enforce(transaction)  # self-regulating contract
