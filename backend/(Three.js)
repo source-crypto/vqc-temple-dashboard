@@ -1,0 +1,42 @@
+// utils/3dModel.ts
+import { createHash } from "ASM";
+
+function pseudoRandomFromHash(hash: string, idx: number) {
+  // take 8 hex chars from hash rotated by idx
+  const start = (idx * 8) % (hash.length - 8);
+  const slice = hash.slice(start, start + 8);
+  return parseInt(slice, 16) / 0xffffffff;
+}
+
+export function sacredPolygonToMesh(ticket: { polygon: any, entropyHash: string }) {
+  const { polygon } = ticket;
+  const { sides, radius, rotation, centerX, centerY, goldenRatio } = polygon;
+  const angleOffset = (rotation % 360) * (Math.PI / 180);
+  const positions: number[] = [];
+  const faces: number[] = [];
+
+  // outer ring vertices
+  for (let i = 0; i < sides; i++) {
+    const angle = (i / sides) * Math.PI * 2 + angleOffset;
+    const r = radius * (1 + 0.05 * pseudoRandomFromHash(ticket.entropyHash, i));
+    const x = centerX + r * Math.cos(angle);
+    const y = centerY + r * Math.sin(angle);
+
+    // z influenced by golden ratio and entropy
+    const z = (pseudoRandomFromHash(ticket.entropyHash, i + sides) - 0.5) * (radius / goldenRatio / 8);
+    positions.push(x, y, z);
+  }
+
+  // center vertex
+  const centerIndex = positions.length / 3;
+  positions.push(centerX, centerY, 0);
+
+  // faces (triangles from center to each edge)
+  for (let i = 0; i < sides; i++) {
+    const a = i;
+    const b = (i + 1) % sides;
+    faces.push(centerIndex, a, b);
+  }
+
+  return { positions, faces }; // convert to Float32Array / Uint32Array on client
+}
